@@ -21,9 +21,11 @@ Would suggest using Super Sensor: http://steamcommunity.com/sharedfiles/filedeta
 
 Indicator light and LCD panel are optional.
 - Indicator light will need to be named INDICATOR
-- LCD Panel will need to be named LCD
+- LCD Panel will need to be named LCD Panel
 
 if you want to add a patrol system, create a second Remote Control block and name it PATROL
 It will automatically use the waypoints in this for the patrol system.
+
+Steam Workshop: http://steamcommunity.com/sharedfiles/filedetails/?id=524850237
 
 ![alt tag](http://postnukerp.com/images/RC-Logo_small1a.png)
