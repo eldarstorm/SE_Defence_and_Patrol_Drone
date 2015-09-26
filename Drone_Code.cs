@@ -7,6 +7,8 @@ const string strSensor = "SENSOR"; //Name your Sensor this
 const string strModeIndicator = "INDICATOR";  //Interior Light - Mode Indicator (Optional)
 const string strPatrol = "PATROL"; //For Second RC Block used for Patrol (Optional)
 const bool patrolOveride = false; //Set true if you want to overide the Patrol autodetection. true = no patrol
+const int maxFollowRange = 20000; //Distance from home or last location before returning
+const int maxEnemyRanege = 2000; //Max range enemy gets from the drone before returning
 
 IMySensorBlock sensor = null;
 IMyCubeGrid targetGrid = null;
@@ -132,7 +134,7 @@ void Main(string argument)
 					}
 					else
 					{
-						if(lastLoc != blankLoc)
+						if(lastLoc.ToString() != blankLoc.ToString())
 							mode = 4;
 						else
 							mode = 2;
@@ -152,14 +154,29 @@ void Main(string argument)
 			status = status+"Sensor Not Found\n\n";
 			mode = 2;
 		}
-
+		
+		//If turrets are destroyed, return back home
 		GridTerminalSystem.GetBlocksOfType<IMyUserControllableGun>(list);
 		if (list.Count == 0)
 		{
 			mode = 2;
 		}
-
-		if (Vector3D.DistanceSquared(target, origin) > 20000 * 20000)
+		
+		//If drone gets beyond range of return location
+		Vector3D returnLoc = new Vector3D(0, 0, 0);
+		if(patrolEnabled && lastLoc.ToString() != blankLoc.ToString())
+			returnLoc = lastLoc;
+		else
+			returnLoc = origin;
+		
+		if (Vector3D.DistanceSquared(Me.GetPosition(), target) > maxEnemyRanege * maxEnemyRanege && target != blankLoc)
+		{
+			if(patrolEnabled)
+				mode = 4;
+			else
+				mode = 2;
+		}
+		if (Vector3D.DistanceSquared(Me.GetPosition(), returnLoc) > maxFollowRange * maxFollowRange && target != blankLoc)
 		{
 			if(patrolEnabled)
 				mode = 4;
@@ -233,8 +250,10 @@ void Main(string argument)
 					modeIndicator.SetValue<Color>("Color", new Color(0.5f, 1f, 0.5f));
 				
 				stopPatrol();
+				DissableTurrets();
 				
-				if(patrolEnabled && lastLoc != blankLoc)
+				status = status+"\n\nStatus: "+"Return Last Location";
+				if(patrolEnabled && lastLoc.ToString() != blankLoc.ToString())
 				{
 					remote.AddWaypoint(lastLoc, "Last Location");
 					remote.SetAutoPilotEnabled(true);
@@ -297,7 +316,7 @@ void EnableTurrets()
 	}
 }
 
-//Dissable all turrets on the grid
+//Disable all turrets on the grid
 void DissableTurrets()
 {
 	GridTerminalSystem.GetBlocksOfType<IMyUserControllableGun>(list);
