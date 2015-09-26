@@ -8,10 +8,11 @@ const string strModeIndicator = "INDICATOR";  //Interior Light - Mode Indicator 
 const string strPatrol = "PATROL"; //For Second RC Block used for Patrol (Optional)
 const bool patrolOveride = false; //Set true if you want to overide the Patrol autodetection. true = no patrol
 const int maxFollowRange = 20000; //Distance from home or last location before returning
-const int maxEnemyRanege = 2000; //Max range enemy gets from the drone before returning
+const int maxEnemyRanege = 20000; //Max range enemy gets from the drone before returning
 
 IMySensorBlock sensor = null;
 IMyCubeGrid targetGrid = null;
+VRage.ModAPI.IMyEntity targetEnt = null;
 IMyInteriorLight modeIndicator = null;
 IMyRemoteControl patrol = null;
 Vector3D lastLoc = new Vector3D(0, 0, 0);
@@ -95,7 +96,7 @@ void Main(string argument)
 					}
 
 					if (detectedGrid != null)
-					{
+					{						
 						bool gridCheck = validTarget(detectedGrid);
 						if(gridCheck)
 						{
@@ -106,7 +107,7 @@ void Main(string argument)
 						}
 						else
 						{
-							status = status+"No Target Grid Found. \n";
+							status = status+"No Valid Target Grid Found.\n";
 							if(mode == 3 && mode != 4)
 								mode = 2;
 						}
@@ -356,27 +357,49 @@ bool gridAtLoc(IMyCubeGrid grid, Vector3D location)
 
 //Makes sure the target is still valid
 bool validTarget(IMyCubeGrid grid)
-{
+{	
 	Vector3I targetV3I = getV3IPos(grid);
 	bool gridCheck = grid.CubeExists(targetV3I);
+	
 	if(gridCheck)
 	{
-		//Checks to see if the block was destroyed
-		IMySlimBlock slimBlock = grid.GetCubeBlock(targetV3I);
-		if(slimBlock == null)
-			return true;
-		else
-		{
-			if(slimBlock.IsDestroyed)
-			{
-				return false;
-			}
-			else
-			{
-				return true;
-			}
-		}
+		int x1 = grid.Min.AxisValue(Base6Directions.Axis.LeftRight); 
+		int y1 = grid.Min.AxisValue(Base6Directions.Axis.UpDown); 
+		int z1 = grid.Min.AxisValue(Base6Directions.Axis.ForwardBackward); 
+		int x2 = grid.Max.AxisValue(Base6Directions.Axis.LeftRight); 
+		int y2 = grid.Max.AxisValue(Base6Directions.Axis.UpDown); 
+		int z2 = grid.Max.AxisValue(Base6Directions.Axis.ForwardBackward); 
+		int xMid = (x1 + x2) / 2; 
+		int yMid = (y1 + y2) / 2; 
+		int zMid = (z1 + z2) / 2; 
+	 
+		x1 = Math.Max(x1, xMid - 10); 
+		x2 = Math.Min(x2, xMid + 10); 
+		y1 = Math.Max(y1, yMid - 10); 
+		y2 = Math.Min(y2, yMid + 10); 
+		z1 = Math.Max(z1, zMid - 10); 
+		z2 = Math.Min(z2, zMid + 10); 
+	 
+		for (int i = x1; i <= x2; i += 1) 
+		{ 
+			for (int j = y1; j <= y2; j += 1) 
+			{ 
+				for (int k = z1; k <= z2; k += 1) 
+				{ 
+					IMySlimBlock slimBlock = grid.GetCubeBlock(new Vector3I(i, j, k)); 
+					if (slimBlock != null) 
+					{ 
+						IMyCubeBlock thisBlock = slimBlock.FatBlock;
+						if(thisBlock != null)
+						{
+							if(thisBlock.IsFunctional)
+								return true;
+						}
+					} 
+				} 
+			} 
+		} 
 	}
-
+	
 	return false;
 }
