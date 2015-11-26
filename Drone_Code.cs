@@ -31,17 +31,30 @@ int mode = 0;
 
 void Main(string argument)
 {
+	
 	string status = "";
+	
+	if (argument == "reset")
+	{
+		this.Storage = null;
+	}
+	else if (argument.IndexOf("GPS") > -1)
+	{
+		char[] delimiterChars = { ':' };
+		string[] GPSSplit = argument.Split(delimiterChars);
+		
+		this.Storage = "{X:"+GPSSplit[2].ToString()+" Y:"+GPSSplit[3].ToString()+" Z:"+GPSSplit[4].ToString()+"}";
+	}
 
 	Vector3D origin = new Vector3D(0, 0, 0);
-    if (argument == null || argument == "")
+    if (this.Storage == null || this.Storage == "")
     {
         origin = Me.GetPosition();
-        Me.TerminalRunArgument = origin.ToString();
+        this.Storage = origin.ToString();
     }
     else
     {
-        Vector3D.TryParse(argument, out origin);
+        Vector3D.TryParse(this.Storage, out origin);
     }
 	
 	if(!patrolOveride)
@@ -82,6 +95,8 @@ void Main(string argument)
 			if(sensorExist)
 			{
 				status = status+"Sensor Found \n\n";
+				
+				status = status+"Home: "+origin.ToString()+"\n\n";
 
 				if (targetGrid == null)
 				{
