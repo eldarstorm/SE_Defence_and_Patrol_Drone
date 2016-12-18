@@ -8,16 +8,19 @@
 - Will automatically break patrol to engage enemy
 - Will return to last point in patrol to continue patrol
 - Will return if exceeds max range
+- Will return if runs out of ammo
 
 The Drone's targeting range is only limited by the range of the sensor.
 Would suggest using Super Sensor: http://steamcommunity.com/sharedfiles/filedetails/?id=504736273
 
 **How to use**
-- Place code in programing block
-- Creat a timer to make the code loop
-- Name the sensor, SENSOR
-- Create at least one Remote Control block
-- Add a turret to the drone
+- Place code in programing block 
+- Creat a timer to make the code loop 
+- Name the sensor, SENSOR 
+- Set Sensor to "Detect Enemy" 
+- Create at least one Remote Control block 
+- Add a turret to the drone 
+- Make sure turret is set to "Target Neutrals" 
 
 Indicator light and LCD panel are optional.
 - Indicator light will need to be named INDICATOR
